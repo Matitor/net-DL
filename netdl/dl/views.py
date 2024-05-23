@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
 import random
 import requests
+from drf_yasg.utils import swagger_auto_schema
+from dl.serializers import *
 
 def text_to_bits(text, encoding='utf-8', errors='surrogatepass'):
     bits = bin(int.from_bytes(text.encode(encoding, errors), 'big'))[2:]
@@ -62,11 +64,12 @@ def encode4(segment):
     segment_bin_after+=code[0:4]
   return text_from_bits(segment_bin_after)
 
+@swagger_auto_schema(method='post',request_body=SegmentSer)
 @csrf_exempt
-@api_view(['Get'])
-def get(request):
+@api_view(['Post'])
+def post(request):
   #/////////////////////////////////////////////////////
-  second_service_url = "http://192.168.95.9:8000/transfer/"
+  second_service_url = "http://172.20.10.2:8000/transfer/"
   percent_drop_segment=2
   #/////////////////////////////////////////////////////
   print(request.data.get('time'),request.data.get('segment_num'),'!!!!принял')
@@ -78,22 +81,17 @@ def get(request):
         'segment_data': segment_data_after, #ПОМЕНЯТЬ
         'time': request.data.get('time'),
         'segment_len':request.data.get('segment_len'),
-        'segment_num':request.data.get('segment_num')
+        'segment_num':request.data.get('segment_num'),
+        'username':request.data.get('username'),
+        'isError':False,
+        'fileName':request.data.get('fileName'),
     }
     
-    answ = requests.post(second_service_url, data=data) # ПРОВЕРИТЬ ТИП МЕТОДА
+    answ = requests.post(second_service_url, data=data) 
     if answ.status_code == 200:
-      print(request.data.get('time'),request.data.get('segment_num'),'отправлен!!!!!')
+      print(request.data.get('time'),request.data.get('segment_num'),request.data.get('username'),'отправлен!!!!!')
     else:
        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Не доходит!!!!!!!!!!!!!!!')
-    if segment_data==segment_data_after:
-       print('целый')
-    else:
-       print('битый')
-    if segment_data==segment_data_after:
-       print('целый')
-    else:
-       print('битый')
     return Response(status=status.HTTP_200_OK)
-  print(request.data.get('time'),request.data.get('segment_num'),'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!дроп!!!!!!!!!!!!!!!!!!!!!!!!')
+  print(request.data.get('time'),request.data.get('segment_num'),request.data.get('username'),'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!дроп!!!!!!!!!!!!!!!!!!!!!!!!')
   return Response(status=status.HTTP_200_OK)

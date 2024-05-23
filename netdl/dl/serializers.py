@@ -1,6 +1,7 @@
 from dl.models import *
 from rest_framework import serializers
 import base64
+from collections import OrderedDict
 
 class BinaryField(serializers.Field):
     def to_representation(self, value):
@@ -12,4 +13,9 @@ class SegmentSer(serializers.ModelSerializer):
   class Meta:
     model = Segment
     fields = ('segment_data', 'time', 'segment_len', 'segment_num')
-  segment_data = BinaryField()
+    def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields 
